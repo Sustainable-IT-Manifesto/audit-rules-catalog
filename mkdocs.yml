@@ -1,0 +1,87 @@
+site_name: "Eco\u2011Audit Pro Rules"
+site_description: Sustainable engineering rules for code, infra, and delivery.
+theme:
+  name: material
+  palette:
+  - scheme: default
+    primary: teal
+    accent: blue
+  - scheme: slate
+    primary: teal
+    accent: blue
+    toggle:
+      icon: material/weather-night
+      name: Switch to dark mode
+  features:
+  - navigation.expand
+  - navigation.sections
+  - content.code.copy
+markdown_extensions:
+- toc
+- tables
+- admonition
+- attr_list
+- def_list
+- md_in_html
+- pymdownx.highlight:
+    anchor_linenums: true
+- pymdownx.superfences
+nav:
+- Home: index.md
+- ASSETS:
+  - "ECO-ASSET-001 \u2014 Deduplicate identical images/fonts": rules/assets/ECO-ASSET-001.md
+  - "ECO-ASSET-002 \u2014 Subsetting & compressing web fonts": rules/assets/ECO-ASSET-002.md
+  - "ECO-ASSET-003 \u2014 Video autoplay or high bitrate by default": rules/assets/ECO-ASSET-003.md
+- CI:
+  - "ECO-CI-001 \u2014 Redundant matrix jobs or duplicate workflows": rules/ci/ECO-CI-001.md
+  - "ECO-CI-002 \u2014 Missing dependency caching": rules/ci/ECO-CI-002.md
+  - "ECO-CI-003 \u2014 Artifact retention too long": rules/ci/ECO-CI-003.md
+  - "ECO-CI-004 \u2014 Run tests selectively (changed paths)": rules/ci/ECO-CI-004.md
+- CLOUDFORMATION:
+  - "ECO-CFN-001 \u2014 Right-size Lambda memory & architecture": rules/cloudformation/ECO-CFN-001.md
+  - "ECO-CFN-002 \u2014 Set S3 lifecycle transitions": rules/cloudformation/ECO-CFN-002.md
+- DATABASE:
+  - "ECO-DB-001 \u2014 Indexes missing on hot queries": rules/database/ECO-DB-001.md
+  - "ECO-DB-002 \u2014 Excessive data retention without policy": rules/database/ECO-DB-002.md
+  - "ECO-DB-003 \u2014 Inefficient serialization (JSON blobs for hot paths)": rules/database/ECO-DB-003.md
+- DOCKER:
+  - "ECO-DOCKER-001 \u2014 Use multi-stage builds to slim images": rules/docker/ECO-DOCKER-001.md
+  - "ECO-DOCKER-002 \u2014 Switch to smaller base image (e.g., alpine, distroless)": rules/docker/ECO-DOCKER-002.md
+  - "ECO-DOCKER-003 \u2014 .dockerignore is missing or too permissive": rules/docker/ECO-DOCKER-003.md
+  - "ECO-DOCKER-004 \u2014 Do not run as root": rules/docker/ECO-DOCKER-004.md
+  - "ECO-DOCKER-005 \u2014 Consolidate RUN layers & enable caching": rules/docker/ECO-DOCKER-005.md
+  - "ECO-DOCKER-006 \u2014 Pin package versions for reproducible caching": rules/docker/ECO-DOCKER-006.md
+  - "ECO-DOCKER-007 \u2014 Minimize layers with COPY --chown and targeted paths": rules/docker/ECO-DOCKER-007.md
+  - "ECO-DOCKER-008 \u2014 Remove dev dependencies from runtime image": rules/docker/ECO-DOCKER-008.md
+  - "ECO-DOCKER-009 \u2014 Use HEALTHCHECK wisely": rules/docker/ECO-DOCKER-009.md
+  - "ECO-DOCKER-010 \u2014 Prefer COPY over ADD (except for archives/URLs)": rules/docker/ECO-DOCKER-010.md
+- GOVERNANCE:
+  - "ECO-GOV-001 \u2014 No baseline/delta tracking enabled": rules/governance/ECO-GOV-001.md
+  - "ECO-GOV-002 \u2014 Missing playbooks linked from rules": rules/governance/ECO-GOV-002.md
+- KUBERNETES:
+  - "ECO-K8S-001 \u2014 Set CPU & memory requests/limits appropriately": rules/kubernetes/ECO-K8S-001.md
+  - "ECO-K8S-002 \u2014 Enable Horizontal Pod Autoscaler (HPA)": rules/kubernetes/ECO-K8S-002.md
+  - "ECO-K8S-003 \u2014 Right-size log verbosity & retention": rules/kubernetes/ECO-K8S-003.md
+  - "ECO-K8S-004 \u2014 Use lean base images for sidecars": rules/kubernetes/ECO-K8S-004.md
+  - "ECO-K8S-005 \u2014 Evict unused initContainers and probes tuned": rules/kubernetes/ECO-K8S-005.md
+  - "ECO-K8S-006 \u2014 Node affinity/taints for efficient bin-packing": rules/kubernetes/ECO-K8S-006.md
+- PYTHON:
+  - "ECO-PY-001 \u2014 Inefficient loops / avoid repeated work": rules/python/ECO-PY-001.md
+  - "ECO-PY-002 \u2014 N+1 DB query patterns": rules/python/ECO-PY-002.md
+  - "ECO-PY-003 \u2014 Inefficient JSON/CSV handling for large data": rules/python/ECO-PY-003.md
+  - "ECO-PY-004 \u2014 Over-precision or unnecessary Decimal use": rules/python/ECO-PY-004.md
+  - "ECO-PY-005 \u2014 Unbounded caching / memory growth": rules/python/ECO-PY-005.md
+  - "ECO-PY-006 \u2014 Inefficient logging in hot paths": rules/python/ECO-PY-006.md
+- TERRAFORM:
+  - "ECO-TF-001 \u2014 Use gp3 (or latest) over gp2 for EBS": rules/terraform/ECO-TF-001.md
+  - "ECO-TF-002 \u2014 Enable S3 lifecycle & intelligent tiering": rules/terraform/ECO-TF-002.md
+  - "ECO-TF-003 \u2014 Right-size instance types and autoscaling bounds": rules/terraform/ECO-TF-003.md
+  - "ECO-TF-004 \u2014 Shorten log retention for CloudWatch/AKS/GKE logs": rules/terraform/ECO-TF-004.md
+  - "ECO-TF-005 \u2014 Enable autoscaling on managed DBs and storage": rules/terraform/ECO-TF-005.md
+- WEB:
+  - "ECO-WEB-001 \u2014 Bundle size budget exceeded": rules/web/ECO-WEB-001.md
+  - "ECO-WEB-002 \u2014 Unoptimized images (format/size)": rules/web/ECO-WEB-002.md
+  - "ECO-WEB-003 \u2014 Unused dependencies or polyfills": rules/web/ECO-WEB-003.md
+  - "ECO-WEB-004 \u2014 Client polling where events/streams suffice": rules/web/ECO-WEB-004.md
+  - "ECO-WEB-005 \u2014 Excessive console/debug in production": rules/web/ECO-WEB-005.md
+  - "ECO-WEB-006 \u2014 No HTTP caching headers / immutability": rules/web/ECO-WEB-006.md

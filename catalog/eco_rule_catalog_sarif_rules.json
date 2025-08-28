@@ -1,0 +1,1241 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "eco-audit-pro",
+          "informationUri": "https://sustainableitmanifesto.org/eco-audit-pro",
+          "rules": [
+            {
+              "id": "ECO-DOCKER-001",
+              "name": "Use multi-stage builds to slim images",
+              "shortDescription": {
+                "text": "Use multi-stage builds to slim images"
+              },
+              "fullDescription": {
+                "text": "Single-stage images bake dev tooling and artifacts into runtime images, increasing pull time and compute."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Refactor to multi-stage; copy only runtime artifacts to final stage.\n\nDetection: Dockerfile lacks multiple FROM stages; build tools present in final image.\n\nKPI: image_size_mb\nEstimated savings: -40\u201370% image size",
+                "markdown": "### Use multi-stage builds to slim images\n\n**Rationale:** Single-stage images bake dev tooling and artifacts into runtime images, increasing pull time and compute.\n\n**Detection:** Dockerfile lacks multiple FROM stages; build tools present in final image.\n\n**Recommendation:** Refactor to multi-stage; copy only runtime artifacts to final stage.\n\n**KPI:** image_size_mb\n\n**Estimated savings:** -40\u201370% image size\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.8,
+                "fingerprint_keys": "file_path,line_range,base_image",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-002",
+              "name": "Switch to smaller base image (e.g., alpine, distroless)",
+              "shortDescription": {
+                "text": "Switch to smaller base image (e.g., alpine, distroless)"
+              },
+              "fullDescription": {
+                "text": "Large base images waste storage, bandwidth, and cold-start time."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Use minimal base images when compatible; evaluate glibc/musl needs.\n\nDetection: Base image in FROM is debian/ubuntu where alpine/distroless equivalent exists.\n\nKPI: image_size_mb\nEstimated savings: -20\u201360% image size",
+                "markdown": "### Switch to smaller base image (e.g., alpine, distroless)\n\n**Rationale:** Large base images waste storage, bandwidth, and cold-start time.\n\n**Detection:** Base image in FROM is debian/ubuntu where alpine/distroless equivalent exists.\n\n**Recommendation:** Use minimal base images when compatible; evaluate glibc/musl needs.\n\n**KPI:** image_size_mb\n\n**Estimated savings:** -20\u201360% image size\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.7,
+                "fingerprint_keys": "file_path,base_image",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-003",
+              "name": ".dockerignore is missing or too permissive",
+              "shortDescription": {
+                "text": ".dockerignore is missing or too permissive"
+              },
+              "fullDescription": {
+                "text": "Unnecessary build context increases build time and cache misses."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Add .dockerignore with common excludes; confirm context reduction.\n\nDetection: No .dockerignore or missing patterns for node_modules/.venv/tests/docs/.git.\n\nKPI: build_context_mb\nEstimated savings: -50\u201395% context",
+                "markdown": "### .dockerignore is missing or too permissive\n\n**Rationale:** Unnecessary build context increases build time and cache misses.\n\n**Detection:** No .dockerignore or missing patterns for node_modules/.venv/tests/docs/.git.\n\n**Recommendation:** Add .dockerignore with common excludes; confirm context reduction.\n\n**KPI:** build_context_mb\n\n**Estimated savings:** -50\u201395% context\n\n**Tags:** Flow,Feedback"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.9,
+                "fingerprint_keys": "repo_root,.dockerignore_hash",
+                "tags": [
+                  "Flow",
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-004",
+              "name": "Do not run as root",
+              "shortDescription": {
+                "text": "Do not run as root"
+              },
+              "fullDescription": {
+                "text": "Root containers require stronger isolation and hinder multitenant efficiency."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Create non-root user and set USER; fix file ownerships.\n\nDetection: USER not set or set to root in final stage.\n\nKPI: non_root_percentage\nEstimated savings: \u226595% workloads non-root",
+                "markdown": "### Do not run as root\n\n**Rationale:** Root containers require stronger isolation and hinder multitenant efficiency.\n\n**Detection:** USER not set or set to root in final stage.\n\n**Recommendation:** Create non-root user and set USER; fix file ownerships.\n\n**KPI:** non_root_percentage\n\n**Estimated savings:** \u226595% workloads non-root\n\n**Tags:** Governance"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "governance",
+                "confidence": 0.8,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Governance"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-005",
+              "name": "Consolidate RUN layers & enable caching",
+              "shortDescription": {
+                "text": "Consolidate RUN layers & enable caching"
+              },
+              "fullDescription": {
+                "text": "Excess layers/cache misses enlarge images and slow builds."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Combine commands; use --no-cache; prune package caches.\n\nDetection: Many small RUN steps; apt/apk caches not cleaned; no --no-cache.\n\nKPI: build_time_sec\nEstimated savings: -10\u201330% build time",
+                "markdown": "### Consolidate RUN layers & enable caching\n\n**Rationale:** Excess layers/cache misses enlarge images and slow builds.\n\n**Detection:** Many small RUN steps; apt/apk caches not cleaned; no --no-cache.\n\n**Recommendation:** Combine commands; use --no-cache; prune package caches.\n\n**KPI:** build_time_sec\n\n**Estimated savings:** -10\u201330% build time\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.6,
+                "fingerprint_keys": "file_path,line_numbers",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-006",
+              "name": "Pin package versions for reproducible caching",
+              "shortDescription": {
+                "text": "Pin package versions for reproducible caching"
+              },
+              "fullDescription": {
+                "text": "Unpinned deps cause cache busts and inconsistent sizes."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Pin versions and use lockfiles; periodic controlled bumps.\n\nDetection: Package managers without pinned versions in Dockerfile.\n\nKPI: cache_hit_rate\nEstimated savings: \u226585% hit rate",
+                "markdown": "### Pin package versions for reproducible caching\n\n**Rationale:** Unpinned deps cause cache busts and inconsistent sizes.\n\n**Detection:** Package managers without pinned versions in Dockerfile.\n\n**Recommendation:** Pin versions and use lockfiles; periodic controlled bumps.\n\n**KPI:** cache_hit_rate\n\n**Estimated savings:** \u226585% hit rate\n\n**Tags:** Feedback"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "file_path,package_name",
+                "tags": [
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-007",
+              "name": "Minimize layers with COPY --chown and targeted paths",
+              "shortDescription": {
+                "text": "Minimize layers with COPY --chown and targeted paths"
+              },
+              "fullDescription": {
+                "text": "Copying entire contexts inflates layers and rebuild scope."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Copy only required directories; use --chown directly in COPY.\n\nDetection: COPY . . patterns without .dockerignore; ownership fixes via separate RUN.\n\nKPI: image_layers\nEstimated savings: -10\u201325% layers",
+                "markdown": "### Minimize layers with COPY --chown and targeted paths\n\n**Rationale:** Copying entire contexts inflates layers and rebuild scope.\n\n**Detection:** COPY . . patterns without .dockerignore; ownership fixes via separate RUN.\n\n**Recommendation:** Copy only required directories; use --chown directly in COPY.\n\n**KPI:** image_layers\n\n**Estimated savings:** -10\u201325% layers\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.6,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-008",
+              "name": "Remove dev dependencies from runtime image",
+              "shortDescription": {
+                "text": "Remove dev dependencies from runtime image"
+              },
+              "fullDescription": {
+                "text": "Dev deps add size and attack surface without runtime value."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Use multi-stage or pip install --no-dev; npm ci --omit=dev for prod stage.\n\nDetection: Node/Python build includes devDependencies/test tooling in final image.\n\nKPI: image_size_mb\nEstimated savings: -20\u201350% size",
+                "markdown": "### Remove dev dependencies from runtime image\n\n**Rationale:** Dev deps add size and attack surface without runtime value.\n\n**Detection:** Node/Python build includes devDependencies/test tooling in final image.\n\n**Recommendation:** Use multi-stage or pip install --no-dev; npm ci --omit=dev for prod stage.\n\n**KPI:** image_size_mb\n\n**Estimated savings:** -20\u201350% size\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "quick_win",
+                "confidence": 0.8,
+                "fingerprint_keys": "file_path,package_manager",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-009",
+              "name": "Use HEALTHCHECK wisely",
+              "shortDescription": {
+                "text": "Use HEALTHCHECK wisely"
+              },
+              "fullDescription": {
+                "text": "Missing healthchecks harm scheduling efficiency and autoscaling responses."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Add lightweight HEALTHCHECK with sensible intervals/timeouts.\n\nDetection: No HEALTHCHECK in long-running services.\n\nKPI: mean_time_to_recover\nEstimated savings: -20\u201340% MTTR",
+                "markdown": "### Use HEALTHCHECK wisely\n\n**Rationale:** Missing healthchecks harm scheduling efficiency and autoscaling responses.\n\n**Detection:** No HEALTHCHECK in long-running services.\n\n**Recommendation:** Add lightweight HEALTHCHECK with sensible intervals/timeouts.\n\n**KPI:** mean_time_to_recover\n\n**Estimated savings:** -20\u201340% MTTR\n\n**Tags:** Feedback"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "governance",
+                "confidence": 0.5,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DOCKER-010",
+              "name": "Prefer COPY over ADD (except for archives/URLs)",
+              "shortDescription": {
+                "text": "Prefer COPY over ADD (except for archives/URLs)"
+              },
+              "fullDescription": {
+                "text": "ADD has implicit behaviors that enlarge layers unexpectedly."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Replace ADD with COPY; keep ADD for verified tar/URL needs.\n\nDetection: ADD used for local files where COPY suffices.\n\nKPI: image_layers\nEstimated savings: -5\u201310% layers",
+                "markdown": "### Prefer COPY over ADD (except for archives/URLs)\n\n**Rationale:** ADD has implicit behaviors that enlarge layers unexpectedly.\n\n**Detection:** ADD used for local files where COPY suffices.\n\n**Recommendation:** Replace ADD with COPY; keep ADD for verified tar/URL needs.\n\n**KPI:** image_layers\n\n**Estimated savings:** -5\u201310% layers\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "docker",
+                "category": "governance",
+                "confidence": 0.6,
+                "fingerprint_keys": "file_path,line_no",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-001",
+              "name": "Set CPU & memory requests/limits appropriately",
+              "shortDescription": {
+                "text": "Set CPU & memory requests/limits appropriately"
+              },
+              "fullDescription": {
+                "text": "Missing/misaligned requests/limits cause overcommit waste or throttling."
+              },
+              "defaultConfiguration": {
+                "level": "critical"
+              },
+              "help": {
+                "text": "Set requests to p95 usage, limits ~1.5\u20132x; monitor and tune.\n\nDetection: Containers without resources or with requests >> observed usage.\n\nKPI: cpu_request_to_usage_ratio\nEstimated savings: -20\u201350% CPU waste",
+                "markdown": "### Set CPU & memory requests/limits appropriately\n\n**Rationale:** Missing/misaligned requests/limits cause overcommit waste or throttling.\n\n**Detection:** Containers without resources or with requests >> observed usage.\n\n**Recommendation:** Set requests to p95 usage, limits ~1.5\u20132x; monitor and tune.\n\n**KPI:** cpu_request_to_usage_ratio\n\n**Estimated savings:** -20\u201350% CPU waste\n\n**Tags:** Flow,Feedback"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "quick_win",
+                "confidence": 0.85,
+                "fingerprint_keys": "kind,name,container",
+                "tags": [
+                  "Flow",
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-002",
+              "name": "Enable Horizontal Pod Autoscaler (HPA)",
+              "shortDescription": {
+                "text": "Enable Horizontal Pod Autoscaler (HPA)"
+              },
+              "fullDescription": {
+                "text": "Static replicas keep idle pods during low traffic."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Add HPA based on CPU/RPS/custom metrics; verify scale-to-zero where safe.\n\nDetection: No HPA present for scalable services.\n\nKPI: avg_replica_hours\nEstimated savings: -20\u201360% replica-hours",
+                "markdown": "### Enable Horizontal Pod Autoscaler (HPA)\n\n**Rationale:** Static replicas keep idle pods during low traffic.\n\n**Detection:** No HPA present for scalable services.\n\n**Recommendation:** Add HPA based on CPU/RPS/custom metrics; verify scale-to-zero where safe.\n\n**KPI:** avg_replica_hours\n\n**Estimated savings:** -20\u201360% replica-hours\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "deep_work",
+                "confidence": 0.75,
+                "fingerprint_keys": "kind,name,namespace",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-003",
+              "name": "Right-size log verbosity & retention",
+              "shortDescription": {
+                "text": "Right-size log verbosity & retention"
+              },
+              "fullDescription": {
+                "text": "Excessive logs increase I/O, storage, and costs."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Reduce verbosity; add log rotation/retention policies.\n\nDetection: High log levels in production; long retention with no lifecycle.\n\nKPI: log_bytes_per_day\nEstimated savings: -30\u201370% logs",
+                "markdown": "### Right-size log verbosity & retention\n\n**Rationale:** Excessive logs increase I/O, storage, and costs.\n\n**Detection:** High log levels in production; long retention with no lifecycle.\n\n**Recommendation:** Reduce verbosity; add log rotation/retention policies.\n\n**KPI:** log_bytes_per_day\n\n**Estimated savings:** -30\u201370% logs\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "kind,name,container",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-004",
+              "name": "Use lean base images for sidecars",
+              "shortDescription": {
+                "text": "Use lean base images for sidecars"
+              },
+              "fullDescription": {
+                "text": "Sidecars often run 24/7; heavy images multiply waste."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Switch to minimal images; consolidate sidecars where feasible.\n\nDetection: Sidecars using generic heavy images.\n\nKPI: image_size_mb\nEstimated savings: -20\u201350% sidecar size",
+                "markdown": "### Use lean base images for sidecars\n\n**Rationale:** Sidecars often run 24/7; heavy images multiply waste.\n\n**Detection:** Sidecars using generic heavy images.\n\n**Recommendation:** Switch to minimal images; consolidate sidecars where feasible.\n\n**KPI:** image_size_mb\n\n**Estimated savings:** -20\u201350% sidecar size\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "quick_win",
+                "confidence": 0.65,
+                "fingerprint_keys": "kind,container,image",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-005",
+              "name": "Evict unused initContainers and probes tuned",
+              "shortDescription": {
+                "text": "Evict unused initContainers and probes tuned"
+              },
+              "fullDescription": {
+                "text": "Overly aggressive probes waste CPU/IO; unused initContainers add time."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Tune probes; remove redundant initContainers.\n\nDetection: Very short probe intervals/timeouts; initContainers doing one-off tasks repeatedly.\n\nKPI: probe_cpu_seconds\nEstimated savings: -10\u201325% CPU",
+                "markdown": "### Evict unused initContainers and probes tuned\n\n**Rationale:** Overly aggressive probes waste CPU/IO; unused initContainers add time.\n\n**Detection:** Very short probe intervals/timeouts; initContainers doing one-off tasks repeatedly.\n\n**Recommendation:** Tune probes; remove redundant initContainers.\n\n**KPI:** probe_cpu_seconds\n\n**Estimated savings:** -10\u201325% CPU\n\n**Tags:** Feedback"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "quick_win",
+                "confidence": 0.55,
+                "fingerprint_keys": "kind,name,container",
+                "tags": [
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-K8S-006",
+              "name": "Node affinity/taints for efficient bin-packing",
+              "shortDescription": {
+                "text": "Node affinity/taints for efficient bin-packing"
+              },
+              "fullDescription": {
+                "text": "Poor bin-packing increases active nodes and cluster energy."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Define affinity/anti-affinity to improve packing with SLOs.\n\nDetection: No affinity/taints leading to spread across many nodes.\n\nKPI: node_hours\nEstimated savings: -10\u201330% node-hours",
+                "markdown": "### Node affinity/taints for efficient bin-packing\n\n**Rationale:** Poor bin-packing increases active nodes and cluster energy.\n\n**Detection:** No affinity/taints leading to spread across many nodes.\n\n**Recommendation:** Define affinity/anti-affinity to improve packing with SLOs.\n\n**KPI:** node_hours\n\n**Estimated savings:** -10\u201330% node-hours\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "kubernetes",
+                "category": "deep_work",
+                "confidence": 0.6,
+                "fingerprint_keys": "namespace,deployment",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-TF-001",
+              "name": "Use gp3 (or latest) over gp2 for EBS",
+              "shortDescription": {
+                "text": "Use gp3 (or latest) over gp2 for EBS"
+              },
+              "fullDescription": {
+                "text": "Modern volumes provide better perf per watt and lower cost."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Switch to gp3 with tuned throughput/IOPS.\n\nDetection: AWS EBS volumes on gp2.\n\nKPI: ebs_gb_month\nEstimated savings: -10\u201320% cost/energy",
+                "markdown": "### Use gp3 (or latest) over gp2 for EBS\n\n**Rationale:** Modern volumes provide better perf per watt and lower cost.\n\n**Detection:** AWS EBS volumes on gp2.\n\n**Recommendation:** Switch to gp3 with tuned throughput/IOPS.\n\n**KPI:** ebs_gb_month\n\n**Estimated savings:** -10\u201320% cost/energy\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "terraform",
+                "category": "quick_win",
+                "confidence": 0.8,
+                "fingerprint_keys": "resource_type,resource_name,region",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-TF-002",
+              "name": "Enable S3 lifecycle & intelligent tiering",
+              "shortDescription": {
+                "text": "Enable S3 lifecycle & intelligent tiering"
+              },
+              "fullDescription": {
+                "text": "Cold data kept in standard tier wastes energy/cost."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Add lifecycle rules; enable intelligent tiering where access is unpredictable.\n\nDetection: S3 buckets without lifecycle or tiering.\n\nKPI: s3_standard_gb\nEstimated savings: -30\u201380% std GB",
+                "markdown": "### Enable S3 lifecycle & intelligent tiering\n\n**Rationale:** Cold data kept in standard tier wastes energy/cost.\n\n**Detection:** S3 buckets without lifecycle or tiering.\n\n**Recommendation:** Add lifecycle rules; enable intelligent tiering where access is unpredictable.\n\n**KPI:** s3_standard_gb\n\n**Estimated savings:** -30\u201380% std GB\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "terraform",
+                "category": "quick_win",
+                "confidence": 0.75,
+                "fingerprint_keys": "bucket_name,region",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-TF-003",
+              "name": "Right-size instance types and autoscaling bounds",
+              "shortDescription": {
+                "text": "Right-size instance types and autoscaling bounds"
+              },
+              "fullDescription": {
+                "text": "Over-provisioned instances waste compute continuously."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Use utilization metrics to set min/max; try smaller/arm/spot where safe.\n\nDetection: ASG min/max too high; large instance families with low CPU.\n\nKPI: vCPU_hours\nEstimated savings: -20\u201350% vCPU-hrs",
+                "markdown": "### Right-size instance types and autoscaling bounds\n\n**Rationale:** Over-provisioned instances waste compute continuously.\n\n**Detection:** ASG min/max too high; large instance families with low CPU.\n\n**Recommendation:** Use utilization metrics to set min/max; try smaller/arm/spot where safe.\n\n**KPI:** vCPU_hours\n\n**Estimated savings:** -20\u201350% vCPU-hrs\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "terraform",
+                "category": "deep_work",
+                "confidence": 0.8,
+                "fingerprint_keys": "asg_name,launch_template",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-TF-004",
+              "name": "Shorten log retention for CloudWatch/AKS/GKE logs",
+              "shortDescription": {
+                "text": "Shorten log retention for CloudWatch/AKS/GKE logs"
+              },
+              "fullDescription": {
+                "text": "Long retention multiplies storage footprint."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Set retention to 7\u201330d per compliance; export cold logs to glacier.\n\nDetection: Retention set to default (indefinite).\n\nKPI: log_gb_month\nEstimated savings: -20\u201360% log GB",
+                "markdown": "### Shorten log retention for CloudWatch/AKS/GKE logs\n\n**Rationale:** Long retention multiplies storage footprint.\n\n**Detection:** Retention set to default (indefinite).\n\n**Recommendation:** Set retention to 7\u201330d per compliance; export cold logs to glacier.\n\n**KPI:** log_gb_month\n\n**Estimated savings:** -20\u201360% log GB\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "terraform",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "resource_name,region",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-TF-005",
+              "name": "Enable autoscaling on managed DBs and storage",
+              "shortDescription": {
+                "text": "Enable autoscaling on managed DBs and storage"
+              },
+              "fullDescription": {
+                "text": "Static allocations keep headroom always-on."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Turn on autoscaling; monitor floor/ceiling.\n\nDetection: RDS/CloudSQL without autoscaling or storage autoscale.\n\nKPI: db_cpu_hours\nEstimated savings: -15\u201340% CPU hrs",
+                "markdown": "### Enable autoscaling on managed DBs and storage\n\n**Rationale:** Static allocations keep headroom always-on.\n\n**Detection:** RDS/CloudSQL without autoscaling or storage autoscale.\n\n**Recommendation:** Turn on autoscaling; monitor floor/ceiling.\n\n**KPI:** db_cpu_hours\n\n**Estimated savings:** -15\u201340% CPU hrs\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "terraform",
+                "category": "deep_work",
+                "confidence": 0.65,
+                "fingerprint_keys": "db_identifier,engine,region",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CFN-001",
+              "name": "Right-size Lambda memory & architecture",
+              "shortDescription": {
+                "text": "Right-size Lambda memory & architecture"
+              },
+              "fullDescription": {
+                "text": "Over-allocating memory wastes cost/energy; x86 vs ARM choice matters."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Tune memory to p95 latency; switch to ARM/Graviton if libs allow.\n\nDetection: Functions with large memory and low duration; x86 where ARM viable.\n\nKPI: ms_per_invocation\nEstimated savings: -10\u201340% ms",
+                "markdown": "### Right-size Lambda memory & architecture\n\n**Rationale:** Over-allocating memory wastes cost/energy; x86 vs ARM choice matters.\n\n**Detection:** Functions with large memory and low duration; x86 where ARM viable.\n\n**Recommendation:** Tune memory to p95 latency; switch to ARM/Graviton if libs allow.\n\n**KPI:** ms_per_invocation\n\n**Estimated savings:** -10\u201340% ms\n\n**Tags:** Flow,Feedback"
+              },
+              "properties": {
+                "tech": "cloudformation",
+                "category": "quick_win",
+                "confidence": 0.7,
+                "fingerprint_keys": "function_name,arch,region",
+                "tags": [
+                  "Flow",
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CFN-002",
+              "name": "Set S3 lifecycle transitions",
+              "shortDescription": {
+                "text": "Set S3 lifecycle transitions"
+              },
+              "fullDescription": {
+                "text": "Default S3 retention uses standard tier by default."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Add transitions to IA/Glacier; delete incomplete MPU after N days.\n\nDetection: Buckets without LifecycleConfiguration.\n\nKPI: s3_standard_gb\nEstimated savings: -30\u201380% std GB",
+                "markdown": "### Set S3 lifecycle transitions\n\n**Rationale:** Default S3 retention uses standard tier by default.\n\n**Detection:** Buckets without LifecycleConfiguration.\n\n**Recommendation:** Add transitions to IA/Glacier; delete incomplete MPU after N days.\n\n**KPI:** s3_standard_gb\n\n**Estimated savings:** -30\u201380% std GB\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "cloudformation",
+                "category": "governance",
+                "confidence": 0.75,
+                "fingerprint_keys": "bucket_name,region",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-001",
+              "name": "Bundle size budget exceeded",
+              "shortDescription": {
+                "text": "Bundle size budget exceeded"
+              },
+              "fullDescription": {
+                "text": "Large bundles increase client energy and CDN egress."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Code split, tree-shake, remove heavy libs, defer rarely used routes.\n\nDetection: Detected bundle > budget (e.g., >250KB gzip).\n\nKPI: bundle_size_kb_gzip\nEstimated savings: -20\u201360% bundle",
+                "markdown": "### Bundle size budget exceeded\n\n**Rationale:** Large bundles increase client energy and CDN egress.\n\n**Detection:** Detected bundle > budget (e.g., >250KB gzip).\n\n**Recommendation:** Code split, tree-shake, remove heavy libs, defer rarely used routes.\n\n**KPI:** bundle_size_kb_gzip\n\n**Estimated savings:** -20\u201360% bundle\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "quick_win",
+                "confidence": 0.85,
+                "fingerprint_keys": "file_path,chunk_name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-002",
+              "name": "Unoptimized images (format/size)",
+              "shortDescription": {
+                "text": "Unoptimized images (format/size)"
+              },
+              "fullDescription": {
+                "text": "Oversized raster images dominate transfer and decode energy."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Use responsive srcset, modern formats, pre-sized images.\n\nDetection: JPEG/PNG where WebP/AVIF possible; dims >> rendered size.\n\nKPI: image_bytes\nEstimated savings: -40\u201390% bytes",
+                "markdown": "### Unoptimized images (format/size)\n\n**Rationale:** Oversized raster images dominate transfer and decode energy.\n\n**Detection:** JPEG/PNG where WebP/AVIF possible; dims >> rendered size.\n\n**Recommendation:** Use responsive srcset, modern formats, pre-sized images.\n\n**KPI:** image_bytes\n\n**Estimated savings:** -40\u201390% bytes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "quick_win",
+                "confidence": 0.9,
+                "fingerprint_keys": "img_src,dimensions",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-003",
+              "name": "Unused dependencies or polyfills",
+              "shortDescription": {
+                "text": "Unused dependencies or polyfills"
+              },
+              "fullDescription": {
+                "text": "Dead weight in node_modules inflates bundles and builds."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Prune deps; use targeted polyfills and browserslist.\n\nDetection: Deps never imported; broad polyfills shipping to modern browsers.\n\nKPI: bundle_modules_count\nEstimated savings: -10\u201330% modules",
+                "markdown": "### Unused dependencies or polyfills\n\n**Rationale:** Dead weight in node_modules inflates bundles and builds.\n\n**Detection:** Deps never imported; broad polyfills shipping to modern browsers.\n\n**Recommendation:** Prune deps; use targeted polyfills and browserslist.\n\n**KPI:** bundle_modules_count\n\n**Estimated savings:** -10\u201330% modules\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "quick_win",
+                "confidence": 0.7,
+                "fingerprint_keys": "package.json,name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-004",
+              "name": "Client polling where events/streams suffice",
+              "shortDescription": {
+                "text": "Client polling where events/streams suffice"
+              },
+              "fullDescription": {
+                "text": "Frequent polling wastes radio/CPU cycles."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Switch to SSE/WebSockets/webhooks with backoff.\n\nDetection: Intervals <30s for endpoints supporting SSE/webhooks.\n\nKPI: poll_requests_per_hour\nEstimated savings: -50\u201395% requests",
+                "markdown": "### Client polling where events/streams suffice\n\n**Rationale:** Frequent polling wastes radio/CPU cycles.\n\n**Detection:** Intervals <30s for endpoints supporting SSE/webhooks.\n\n**Recommendation:** Switch to SSE/WebSockets/webhooks with backoff.\n\n**KPI:** poll_requests_per_hour\n\n**Estimated savings:** -50\u201395% requests\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "deep_work",
+                "confidence": 0.75,
+                "fingerprint_keys": "url,interval_ms",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-005",
+              "name": "Excessive console/debug in production",
+              "shortDescription": {
+                "text": "Excessive console/debug in production"
+              },
+              "fullDescription": {
+                "text": "Console and verbose logging slow pages and leak info."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Strip logs during build; guard by env.\n\nDetection: console.debug/trace present in prod bundles.\n\nKPI: console_calls_per_page\nEstimated savings: -80\u2013100%",
+                "markdown": "### Excessive console/debug in production\n\n**Rationale:** Console and verbose logging slow pages and leak info.\n\n**Detection:** console.debug/trace present in prod bundles.\n\n**Recommendation:** Strip logs during build; guard by env.\n\n**KPI:** console_calls_per_page\n\n**Estimated savings:** -80\u2013100%\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "governance",
+                "confidence": 0.6,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-WEB-006",
+              "name": "No HTTP caching headers / immutability",
+              "shortDescription": {
+                "text": "No HTTP caching headers / immutability"
+              },
+              "fullDescription": {
+                "text": "Lack of caching increases repeat transfer energy."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Add Cache-Control/ETag; content-hash filenames.\n\nDetection: Static assets served without long-lived cache headers.\n\nKPI: repeat_transfer_bytes\nEstimated savings: -40\u201390%",
+                "markdown": "### No HTTP caching headers / immutability\n\n**Rationale:** Lack of caching increases repeat transfer energy.\n\n**Detection:** Static assets served without long-lived cache headers.\n\n**Recommendation:** Add Cache-Control/ETag; content-hash filenames.\n\n**KPI:** repeat_transfer_bytes\n\n**Estimated savings:** -40\u201390%\n\n**Tags:** Feedback"
+              },
+              "properties": {
+                "tech": "web",
+                "category": "quick_win",
+                "confidence": 0.8,
+                "fingerprint_keys": "path,header_set",
+                "tags": [
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-001",
+              "name": "Inefficient loops / avoid repeated work",
+              "shortDescription": {
+                "text": "Inefficient loops / avoid repeated work"
+              },
+              "fullDescription": {
+                "text": "Python loops with repeated computation inflate CPU time."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Hoist invariants; precompile regex; use comprehensions/vectorize.\n\nDetection: Repeated regex compilation, function calls, or attribute lookups inside loops.\n\nKPI: cpu_seconds\nEstimated savings: -10\u201340% CPU",
+                "markdown": "### Inefficient loops / avoid repeated work\n\n**Rationale:** Python loops with repeated computation inflate CPU time.\n\n**Detection:** Repeated regex compilation, function calls, or attribute lookups inside loops.\n\n**Recommendation:** Hoist invariants; precompile regex; use comprehensions/vectorize.\n\n**KPI:** cpu_seconds\n\n**Estimated savings:** -10\u201340% CPU\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "quick_win",
+                "confidence": 0.7,
+                "fingerprint_keys": "file_path,line_range,pattern",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-002",
+              "name": "N+1 DB query patterns",
+              "shortDescription": {
+                "text": "N+1 DB query patterns"
+              },
+              "fullDescription": {
+                "text": "Chatty ORM access explodes DB calls and CPU/IO."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Batch queries; use joins; ORM eager loading.\n\nDetection: ORM calls in loops; missing select_related/prefetch_related.\n\nKPI: db_queries_per_req\nEstimated savings: -50\u201395% queries",
+                "markdown": "### N+1 DB query patterns\n\n**Rationale:** Chatty ORM access explodes DB calls and CPU/IO.\n\n**Detection:** ORM calls in loops; missing select_related/prefetch_related.\n\n**Recommendation:** Batch queries; use joins; ORM eager loading.\n\n**KPI:** db_queries_per_req\n\n**Estimated savings:** -50\u201395% queries\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "deep_work",
+                "confidence": 0.8,
+                "fingerprint_keys": "file_path,line_range,orm_model",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-003",
+              "name": "Inefficient JSON/CSV handling for large data",
+              "shortDescription": {
+                "text": "Inefficient JSON/CSV handling for large data"
+              },
+              "fullDescription": {
+                "text": "Loading whole files into memory increases time/energy."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Use streaming/chunked reads; ijson; pandas chunksize.\n\nDetection: json.load of large files; pandas without chunksize.\n\nKPI: io_bytes\nEstimated savings: -30\u201370% CPU/IO",
+                "markdown": "### Inefficient JSON/CSV handling for large data\n\n**Rationale:** Loading whole files into memory increases time/energy.\n\n**Detection:** json.load of large files; pandas without chunksize.\n\n**Recommendation:** Use streaming/chunked reads; ijson; pandas chunksize.\n\n**KPI:** io_bytes\n\n**Estimated savings:** -30\u201370% CPU/IO\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "deep_work",
+                "confidence": 0.65,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-004",
+              "name": "Over-precision or unnecessary Decimal use",
+              "shortDescription": {
+                "text": "Over-precision or unnecessary Decimal use"
+              },
+              "fullDescription": {
+                "text": "High precision math is slower and energy-costly when not needed."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Use floats/NumPy dtypes appropriate to domain.\n\nDetection: Decimal in hot paths without financial need; float64 where float32 OK.\n\nKPI: cpu_seconds\nEstimated savings: -5\u201320% CPU",
+                "markdown": "### Over-precision or unnecessary Decimal use\n\n**Rationale:** High precision math is slower and energy-costly when not needed.\n\n**Detection:** Decimal in hot paths without financial need; float64 where float32 OK.\n\n**Recommendation:** Use floats/NumPy dtypes appropriate to domain.\n\n**KPI:** cpu_seconds\n\n**Estimated savings:** -5\u201320% CPU\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "quick_win",
+                "confidence": 0.5,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-005",
+              "name": "Unbounded caching / memory growth",
+              "shortDescription": {
+                "text": "Unbounded caching / memory growth"
+              },
+              "fullDescription": {
+                "text": "Caches without bounds increase memory/GC and swap risk."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Set maxsize; periodic pruning; use TTL caches.\n\nDetection: lru_cache with no maxsize; dict caches never pruned.\n\nKPI: peak_rss_mb\nEstimated savings: -10\u201330% RAM",
+                "markdown": "### Unbounded caching / memory growth\n\n**Rationale:** Caches without bounds increase memory/GC and swap risk.\n\n**Detection:** lru_cache with no maxsize; dict caches never pruned.\n\n**Recommendation:** Set maxsize; periodic pruning; use TTL caches.\n\n**KPI:** peak_rss_mb\n\n**Estimated savings:** -10\u201330% RAM\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "governance",
+                "confidence": 0.6,
+                "fingerprint_keys": "func_name,decorator_args",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-PY-006",
+              "name": "Inefficient logging in hot paths",
+              "shortDescription": {
+                "text": "Inefficient logging in hot paths"
+              },
+              "fullDescription": {
+                "text": "String formatting and IO in tight loops adds overhead."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Use lazy logging; guard by level; batch logs.\n\nDetection: f-strings evaluated before log level check; many debug logs.\n\nKPI: cpu_seconds\nEstimated savings: -5\u201315% CPU",
+                "markdown": "### Inefficient logging in hot paths\n\n**Rationale:** String formatting and IO in tight loops adds overhead.\n\n**Detection:** f-strings evaluated before log level check; many debug logs.\n\n**Recommendation:** Use lazy logging; guard by level; batch logs.\n\n**KPI:** cpu_seconds\n\n**Estimated savings:** -5\u201315% CPU\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "python",
+                "category": "quick_win",
+                "confidence": 0.6,
+                "fingerprint_keys": "file_path,line_range",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CI-001",
+              "name": "Redundant matrix jobs or duplicate workflows",
+              "shortDescription": {
+                "text": "Redundant matrix jobs or duplicate workflows"
+              },
+              "fullDescription": {
+                "text": "Unnecessary parallel jobs multiply CI compute."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Deduplicate; conditional matrix; path filters.\n\nDetection: Matrix includes identical environments; overlapping triggers.\n\nKPI: ci_vcpu_minutes\nEstimated savings: -20\u201350% minutes",
+                "markdown": "### Redundant matrix jobs or duplicate workflows\n\n**Rationale:** Unnecessary parallel jobs multiply CI compute.\n\n**Detection:** Matrix includes identical environments; overlapping triggers.\n\n**Recommendation:** Deduplicate; conditional matrix; path filters.\n\n**KPI:** ci_vcpu_minutes\n\n**Estimated savings:** -20\u201350% minutes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "ci",
+                "category": "governance",
+                "confidence": 0.75,
+                "fingerprint_keys": "workflow_name,job_name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CI-002",
+              "name": "Missing dependency caching",
+              "shortDescription": {
+                "text": "Missing dependency caching"
+              },
+              "fullDescription": {
+                "text": "Cold builds fetch and build deps every run."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Add caching keyed by lockfile; cache Docker layers.\n\nDetection: No actions/cache or equivalent; lockfiles ignored.\n\nKPI: cache_hit_rate\nEstimated savings: \u226585% hit rate",
+                "markdown": "### Missing dependency caching\n\n**Rationale:** Cold builds fetch and build deps every run.\n\n**Detection:** No actions/cache or equivalent; lockfiles ignored.\n\n**Recommendation:** Add caching keyed by lockfile; cache Docker layers.\n\n**KPI:** cache_hit_rate\n\n**Estimated savings:** \u226585% hit rate\n\n**Tags:** Feedback"
+              },
+              "properties": {
+                "tech": "ci",
+                "category": "quick_win",
+                "confidence": 0.85,
+                "fingerprint_keys": "workflow_name,cache_key",
+                "tags": [
+                  "Feedback"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CI-003",
+              "name": "Artifact retention too long",
+              "shortDescription": {
+                "text": "Artifact retention too long"
+              },
+              "fullDescription": {
+                "text": "Long-lived artifacts consume storage."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Reduce retention; compress artifacts; avoid large artifacts.\n\nDetection: Artifacts kept >14 days without need.\n\nKPI: artifact_gb_month\nEstimated savings: -30\u201380% GB",
+                "markdown": "### Artifact retention too long\n\n**Rationale:** Long-lived artifacts consume storage.\n\n**Detection:** Artifacts kept >14 days without need.\n\n**Recommendation:** Reduce retention; compress artifacts; avoid large artifacts.\n\n**KPI:** artifact_gb_month\n\n**Estimated savings:** -30\u201380% GB\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "ci",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "workflow_name,artifact_name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-CI-004",
+              "name": "Run tests selectively (changed paths)",
+              "shortDescription": {
+                "text": "Run tests selectively (changed paths)"
+              },
+              "fullDescription": {
+                "text": "Running all tests on every change wastes compute."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Adopt test impact analysis or path filters; split smoke vs full.\n\nDetection: No path-based test selection; no impacted tests.\n\nKPI: ci_vcpu_minutes\nEstimated savings: -20\u201360% minutes",
+                "markdown": "### Run tests selectively (changed paths)\n\n**Rationale:** Running all tests on every change wastes compute.\n\n**Detection:** No path-based test selection; no impacted tests.\n\n**Recommendation:** Adopt test impact analysis or path filters; split smoke vs full.\n\n**KPI:** ci_vcpu_minutes\n\n**Estimated savings:** -20\u201360% minutes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "ci",
+                "category": "deep_work",
+                "confidence": 0.65,
+                "fingerprint_keys": "workflow_name,paths_filter",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-ASSET-001",
+              "name": "Deduplicate identical images/fonts",
+              "shortDescription": {
+                "text": "Deduplicate identical images/fonts"
+              },
+              "fullDescription": {
+                "text": "Duplicate assets inflate bundles and storage."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Deduplicate; reference single copy; use asset pipeline.\n\nDetection: Hash-colliding assets in repo or build output.\n\nKPI: asset_bytes\nEstimated savings: -10\u201330% bytes",
+                "markdown": "### Deduplicate identical images/fonts\n\n**Rationale:** Duplicate assets inflate bundles and storage.\n\n**Detection:** Hash-colliding assets in repo or build output.\n\n**Recommendation:** Deduplicate; reference single copy; use asset pipeline.\n\n**KPI:** asset_bytes\n\n**Estimated savings:** -10\u201330% bytes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "assets",
+                "category": "quick_win",
+                "confidence": 0.7,
+                "fingerprint_keys": "asset_hash,asset_path",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-ASSET-002",
+              "name": "Subsetting & compressing web fonts",
+              "shortDescription": {
+                "text": "Subsetting & compressing web fonts"
+              },
+              "fullDescription": {
+                "text": "Full font families add 100s of KB per page."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Subset to needed glyphs; use WOFF2; preload wisely.\n\nDetection: Multiple full fonts loaded; no unicode-range subsetting.\n\nKPI: font_bytes\nEstimated savings: -40\u201380% bytes",
+                "markdown": "### Subsetting & compressing web fonts\n\n**Rationale:** Full font families add 100s of KB per page.\n\n**Detection:** Multiple full fonts loaded; no unicode-range subsetting.\n\n**Recommendation:** Subset to needed glyphs; use WOFF2; preload wisely.\n\n**KPI:** font_bytes\n\n**Estimated savings:** -40\u201380% bytes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "assets",
+                "category": "deep_work",
+                "confidence": 0.8,
+                "fingerprint_keys": "css_file,font_name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-ASSET-003",
+              "name": "Video autoplay or high bitrate by default",
+              "shortDescription": {
+                "text": "Video autoplay or high bitrate by default"
+              },
+              "fullDescription": {
+                "text": "Autoplay and high bitrate waste client energy/data."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Disable autoplay; use ABR; reduce default resolution.\n\nDetection: Autoplay enabled; >1080p on mobile; no adaptive bitrate.\n\nKPI: video_bytes\nEstimated savings: -30\u201370% bytes",
+                "markdown": "### Video autoplay or high bitrate by default\n\n**Rationale:** Autoplay and high bitrate waste client energy/data.\n\n**Detection:** Autoplay enabled; >1080p on mobile; no adaptive bitrate.\n\n**Recommendation:** Disable autoplay; use ABR; reduce default resolution.\n\n**KPI:** video_bytes\n\n**Estimated savings:** -30\u201370% bytes\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "assets",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "html_tag,src,attributes",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DB-001",
+              "name": "Indexes missing on hot queries",
+              "shortDescription": {
+                "text": "Indexes missing on hot queries"
+              },
+              "fullDescription": {
+                "text": "Table scans increase CPU/IO and latency."
+              },
+              "defaultConfiguration": {
+                "level": "high"
+              },
+              "help": {
+                "text": "Add composite indexes; verify via EXPLAIN/ANALYZE.\n\nDetection: Slow query patterns lacking supporting indexes.\n\nKPI: cpu_seconds_per_query\nEstimated savings: -30\u201390% CPU",
+                "markdown": "### Indexes missing on hot queries\n\n**Rationale:** Table scans increase CPU/IO and latency.\n\n**Detection:** Slow query patterns lacking supporting indexes.\n\n**Recommendation:** Add composite indexes; verify via EXPLAIN/ANALYZE.\n\n**KPI:** cpu_seconds_per_query\n\n**Estimated savings:** -30\u201390% CPU\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "database",
+                "category": "deep_work",
+                "confidence": 0.8,
+                "fingerprint_keys": "table_name,query_fingerprint",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DB-002",
+              "name": "Excessive data retention without policy",
+              "shortDescription": {
+                "text": "Excessive data retention without policy"
+              },
+              "fullDescription": {
+                "text": "Old rows and blobs increase storage/backup energy."
+              },
+              "defaultConfiguration": {
+                "level": "medium"
+              },
+              "help": {
+                "text": "Add retention; tier cold data; purge safely.\n\nDetection: Tables without TTL/archival policy; ever-growing blobs.\n\nKPI: storage_gb_month\nEstimated savings: -20\u201360% GB",
+                "markdown": "### Excessive data retention without policy\n\n**Rationale:** Old rows and blobs increase storage/backup energy.\n\n**Detection:** Tables without TTL/archival policy; ever-growing blobs.\n\n**Recommendation:** Add retention; tier cold data; purge safely.\n\n**KPI:** storage_gb_month\n\n**Estimated savings:** -20\u201360% GB\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "database",
+                "category": "governance",
+                "confidence": 0.7,
+                "fingerprint_keys": "table_name,age_days",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-DB-003",
+              "name": "Inefficient serialization (JSON blobs for hot paths)",
+              "shortDescription": {
+                "text": "Inefficient serialization (JSON blobs for hot paths)"
+              },
+              "fullDescription": {
+                "text": "JSON blobs force parse/scan vs structured columns."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Normalize columns or add generated columns with indexes.\n\nDetection: Frequent JSON_EXTRACT on hot path fields.\n\nKPI: cpu_seconds_per_query\nEstimated savings: -10\u201340% CPU",
+                "markdown": "### Inefficient serialization (JSON blobs for hot paths)\n\n**Rationale:** JSON blobs force parse/scan vs structured columns.\n\n**Detection:** Frequent JSON_EXTRACT on hot path fields.\n\n**Recommendation:** Normalize columns or add generated columns with indexes.\n\n**KPI:** cpu_seconds_per_query\n\n**Estimated savings:** -10\u201340% CPU\n\n**Tags:** Flow"
+              },
+              "properties": {
+                "tech": "database",
+                "category": "deep_work",
+                "confidence": 0.6,
+                "fingerprint_keys": "table_name,column_name",
+                "tags": [
+                  "Flow"
+                ]
+              }
+            },
+            {
+              "id": "ECO-GOV-001",
+              "name": "No baseline/delta tracking enabled",
+              "shortDescription": {
+                "text": "No baseline/delta tracking enabled"
+              },
+              "fullDescription": {
+                "text": "Without baselines, improvements aren\u2019t measured or celebrated."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Capture baseline on first run; compare on PRs and sprints.\n\nDetection: Missing .eco-audit baseline files.\n\nKPI: improvement_rate\nEstimated savings: \u226520% reduction in 60 days",
+                "markdown": "### No baseline/delta tracking enabled\n\n**Rationale:** Without baselines, improvements aren\u2019t measured or celebrated.\n\n**Detection:** Missing .eco-audit baseline files.\n\n**Recommendation:** Capture baseline on first run; compare on PRs and sprints.\n\n**KPI:** improvement_rate\n\n**Estimated savings:** \u226520% reduction in 60 days\n\n**Tags:** Learning"
+              },
+              "properties": {
+                "tech": "governance",
+                "category": "governance",
+                "confidence": 0.9,
+                "fingerprint_keys": "repo_root,baseline_hash",
+                "tags": [
+                  "Learning"
+                ]
+              }
+            },
+            {
+              "id": "ECO-GOV-002",
+              "name": "Missing playbooks linked from rules",
+              "shortDescription": {
+                "text": "Missing playbooks linked from rules"
+              },
+              "fullDescription": {
+                "text": "Lack of repeatable fixes slows adoption and learning."
+              },
+              "defaultConfiguration": {
+                "level": "low"
+              },
+              "help": {
+                "text": "Author concise playbooks; link from SARIF help.\n\nDetection: Rules without documented fix steps/playbooks.\n\nKPI: time_to_fix_days\nEstimated savings: -20\u201340% TTF",
+                "markdown": "### Missing playbooks linked from rules\n\n**Rationale:** Lack of repeatable fixes slows adoption and learning.\n\n**Detection:** Rules without documented fix steps/playbooks.\n\n**Recommendation:** Author concise playbooks; link from SARIF help.\n\n**KPI:** time_to_fix_days\n\n**Estimated savings:** -20\u201340% TTF\n\n**Tags:** Learning"
+              },
+              "properties": {
+                "tech": "governance",
+                "category": "governance",
+                "confidence": 0.6,
+                "fingerprint_keys": "rule_id,playbook_url",
+                "tags": [
+                  "Learning"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
