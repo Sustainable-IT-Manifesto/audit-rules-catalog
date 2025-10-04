@@ -1,4 +1,4 @@
-# ECO-DB-002: Excessive data retention without policy
+# ECO-DB-013: Excessive data retention without policy
 
 **Tech:** database  
 **Severity:** medium  
@@ -30,4 +30,3 @@ Add retention; tier cold data; purge safely.
 - **Three Ways Mapping:** Flow
 
 ---
-

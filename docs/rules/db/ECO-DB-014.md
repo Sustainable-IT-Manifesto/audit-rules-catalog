@@ -1,4 +1,4 @@
-# ECO-DB-003: Inefficient serialization (JSON blobs for hot paths)
+# ECO-DB-014: Inefficient serialization (JSON blobs for hot paths)
 
 **Tech:** database  
 **Severity:** low  
@@ -30,4 +30,3 @@ Normalize columns or add generated columns with indexes.
 - **Three Ways Mapping:** Flow
 
 ---
-

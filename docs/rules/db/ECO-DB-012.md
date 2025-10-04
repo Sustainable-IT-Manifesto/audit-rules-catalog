@@ -1,4 +1,4 @@
-# ECO-DB-001: Indexes missing on hot queries
+# ECO-DB-012: Indexes missing on hot queries
 
 **Tech:** database  
 **Severity:** high  
@@ -30,4 +30,3 @@ Add composite indexes; verify via EXPLAIN/ANALYZE.
 - **Three Ways Mapping:** Flow
 
 ---
-
